@@ -2,16 +2,14 @@
 
 const fastify = require('fastify');
 const dotenv = require('dotenv');
-
-
 dotenv.config();
+const fastifyCookie = require('@fastify/cookie')
 
-// const jwtPlugin = require('./plugins/jwt');
-// const dbPlugin = require('./plugins/db');
-// const schedulerPlugin = require('./plugins/scheduler');
+const authMiddleware = require('./middlewares/auth.middleware')
+const roleMiddleware = require('./middlewares/role.middleware')
 
-// const authRoutes = require('./routes/v1/auth.routes');
-// const userRoutes = require('./routes/v1/user.routes');
+const authRoutes = require('./api/v1/routes/auth.routes');
+const userRoutes = require('./api/v1/routes/user.routes');
 // const attendanceRoutes = require('./routes/v1/attendance.routes');
 // const dashboardRoutes = require('./routes/v1/dashboard.routes');
 
@@ -26,17 +24,6 @@ function buildApp(options = {}) {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true
   });
-
-  // Register rate limiter
-  // app.register(require('@fastify/rate-limit'), {
-  //   max: 100,
-  //   timeWindow: '1 minute'
-  // });
-
-  // Register plugins
-  // app.register(jwtPlugin);
-  // app.register(dbPlugin);
-  // app.register(schedulerPlugin);
 
   if (process.env.NODE_ENV === 'development') {
     app.register(require('@fastify/swagger'), {
@@ -64,11 +51,22 @@ function buildApp(options = {}) {
     return { status: 'ok', timestamp: new Date().toISOString() };
   });
 
+  app.register(fastifyCookie, {
+    hook: 'onRequest'
+  })
+
+   app.register(require('./plugins/jwt'));
+   app.register(require('./plugins/db'));
+  //  app.register(require('./plugins/scheduler'));
+
+   app.decorate('auth', authMiddleware(app));
+   app.decorate('role', roleMiddleware(app));
+
   const apiPrefix = '/api/v1';
 
   // Register routes
-  // app.register(authRoutes, { prefix: `${apiPrefix}/auth` });
-  // app.register(userRoutes, { prefix: `${apiPrefix}/users` });
+  app.register(authRoutes, { prefix: `${apiPrefix}/auth` });
+  app.register(userRoutes, { prefix: `${apiPrefix}/users` });
   // app.register(attendanceRoutes, { prefix: `${apiPrefix}/attendance` });
   // app.register(dashboardRoutes, { prefix: `${apiPrefix}/admin/dashboard` });
 

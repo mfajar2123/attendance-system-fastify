@@ -15,7 +15,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@fastify/cookie": "^6.0.0",
     "@fastify/cors": "^8.5.0",
+    "@fastify/formbody": "^8.0.2",
     "@fastify/jwt": "^7.2.1",
     "@fastify/rate-limit": "^10.2.2",
     "@fastify/schedule": "^6.0.0",
