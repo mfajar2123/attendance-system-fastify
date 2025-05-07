@@ -98,40 +98,40 @@ class AuthService {
         }
     }
 
-    // async refreshToken(fastify, token) {
-    //     try {
-    //         const [storedToken] = await db.select().from(refreshTokens).where(eq(refreshTokens.token, token)).limit(1)
+    async refreshToken(fastify, token) {
+        try {
+            const [storedToken] = await db.select().from(refreshTokens).where(eq(refreshTokens.token, token)).limit(1)
 
-    //         if (!storedToken || storedToken.expiresAt < new Date() || storedToken.revokedAt) {
-    //             return { success: false, message: 'Refresh token expired or revoked' }
-    //         }
+            if (!storedToken || storedToken.expiresAt < new Date() || storedToken.revokedAt) {
+                return { success: false, message: 'Refresh token expired or revoked' }
+            }
 
-    //         const [user] = await db.select().from(users).where(eq(users.id, storedToken.userId)).limit(1)
+            const [user] = await db.select().from(users).where(eq(users.id, storedToken.userId)).limit(1)
 
-    //         if (!user) {
-    //             return { success: false, message: 'User not found' }
-    //         }
+            if (!user) {
+                return { success: false, message: 'User not found' }
+            }
 
-    //         if (!user.isActive) {
-    //             return { success: false, message: 'Account is deactivated' }
-    //         }
+            if (!user.isActive) {
+                return { success: false, message: 'Account is deactivated' }
+            }
 
-    //         const accessToken = jwtUtils.generateRefreshToken(fastify, {
-    //             id: user.id,
-    //             username: user.username,
-    //             email: user.email,
-    //             role: user.role
-    //         })
+            const accessToken = await jwtUtils.generateToken(fastify, {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role
+            })
 
-    //         return {
-    //             success: true,
-    //             accessToken,
-    //             expiresIn: 3600
-    //         }
-    //     } catch (error) {
-    //         throw new Error(`Failed to refresh token: ${error.message}`)
-    //     }
-    // }
+            return {
+                success: true,
+                accessToken,
+                expiresIn: 3600
+            }
+        } catch (error) {
+            throw new Error(`Failed to refresh token: ${error.message}`)
+        }
+    }
 
     // async logout(userId, refreshToken) {
     //     try {

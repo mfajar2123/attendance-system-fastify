@@ -35,7 +35,8 @@ class AuthController {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
-                maxAge: 30 * 24 * 60 * 60 * 1000 // 30 hari
+                maxAge: 30 * 24 * 60 * 60 // dalam detik
+
             })
 
             return reply.send({
@@ -53,36 +54,36 @@ class AuthController {
         }
     }
 
-    // async refreshToken(request, reply) {
-    //     try {
-    //         const token = request.cookies.refreshToken || request.body.refreshToken
+    async refreshToken(request, reply) {
+        try {
+            const token = request.cookies.refreshToken || request.body.refreshToken
 
-    //         if (!token) {
-    //             return reply.code(400).send({
-    //                 success: false,
-    //                 message: 'Refresh token is required'
-    //             })
-    //         }
+            if (!token) {
+                return reply.code(400).send({
+                    success: false,
+                    message: 'Refresh token is required'
+                })
+            }
 
-    //         const result = await authService.refreshToken(request.server, token)
+            const result = await authService.refreshToken(request.server, token)
 
-    //         if (!result.success) {
-    //             return reply.code(401).send(result)
-    //         }
+            if (!result.success) {
+                return reply.code(401).send(result)
+            }
 
-    //         return reply.send({
-    //             success: true,
-    //             accessToken: result.accessToken,
-    //             expiresIn: result.expiresIn
-    //         })
-    //     } catch (error) {
-    //         request.log.error(error)
-    //         return reply.code(500).send({
-    //             success: false,
-    //             message: 'Internal server error'
-    //         })
-    //     }
-    // }
+            return reply.send({
+                success: true,
+                accessToken: result.accessToken,
+                expiresIn: result.expiresIn
+            })
+        } catch (error) {
+            request.log.error(error)
+            return reply.code(500).send({
+                success: false,
+                message: 'Internal server error'
+            })
+        }
+    }
 
     // async logout(request, reply) {
     //     try {

@@ -19,9 +19,9 @@ async function authRoutes(fastify, options) {
     schema: loginSchema
   }, authController.login.bind(authController));
 
-  // fastify.post('/refresh-token', {
-  //   schema: refreshTokenSchema
-  // }, authController.refreshToken.bind(authController));
+  fastify.post('/refresh-token', {
+    schema: refreshTokenSchema
+  }, authController.refreshToken.bind(authController));
 
   // fastify.post('/logout', {
   //   schema: logoutSchema,
