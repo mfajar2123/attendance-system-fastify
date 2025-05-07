@@ -1,7 +1,9 @@
 'use strict'
 
 const { db } = require('../db/connection')
-const { eq } = require('drizzle-orm')
+const { eq, and } = require('drizzle-orm')
+
+
 const bcrypt = require('bcryptjs')
 const { v4: uuidv4 } = require('uuid')
 const { users, refreshTokens } = require('../models/schema/users')
@@ -60,8 +62,7 @@ class AuthService {
                 username: user.username,
                 email: user.email,
                 role: user.role
-            })
-            
+            }) 
 
             const refreshToken = uuidv4()
             const refreshExpiry = new Date()
@@ -90,7 +91,7 @@ class AuthService {
                 tokens: {
                     accessToken,
                     refreshToken,
-                    expiresIn: 3600
+                    expiresIn: 900
                 }
             }
         } catch (error) {
@@ -126,26 +127,49 @@ class AuthService {
             return {
                 success: true,
                 accessToken,
-                expiresIn: 3600
+                expiresIn:900
             }
         } catch (error) {
             throw new Error(`Failed to refresh token: ${error.message}`)
         }
     }
 
-    // async logout(userId, refreshToken) {
-    //     try {
-    //         await db.update(refreshTokens)
-    //             .set({ revokedAt: new Date() })
-    //             .where(eq(refreshTokens.userId, userId))
-    //             .where(eq(refreshTokens.token, refreshToken))
+    async logout(userId, refreshToken) {
+        try {
 
-    //         return { success: true }
-    //     } catch (error) {
-    //         throw new Error(`Failed to logout: ${error.message}`)
-    //     }
-    // }
+            // Cek apakah token valid dan belum direvoke
+            const [existingToken] = await db
+                .select()
+                .from(refreshTokens)
+                .where(and(
+                    eq(refreshTokens.userId, userId),
+                    eq(refreshTokens.token, refreshToken)
+                ))
+                .limit(1);
+    
+            if (!existingToken) {
+                return { success: false, message: 'Refresh token not found' };
+            }
+    
+            if (existingToken.revokedAt) {
+                return { success: false, message: 'Token already revoked' };
+            }
+    
+            // Set revokedAt untuk menandai token tidak bisa digunakan lagi
+            await db.update(refreshTokens)
+                .set({ revokedAt: new Date() })
+                .where(and(
+                    eq(refreshTokens.userId, userId),
+                    eq(refreshTokens.token, refreshToken)
+                ));
+                console.log('Received refreshToken:', refreshToken);
+                console.log('Existing token:', existingToken);
 
+            return { success: true, message: 'Logout successful' };
+        } catch (error) {
+            throw new Error(`Failed to logout: ${error.message}`);
+        }
+    }
    
 }
 

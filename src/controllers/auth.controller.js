@@ -85,30 +85,40 @@ class AuthController {
         }
     }
 
-    // async logout(request, reply) {
-    //     try {
-    //         const userId = request.user.id
-    //         const refreshToken = request.cookies.refreshToken || request.body.refreshToken
-
-    //         if (refreshToken) {
-    //             await authService.logout(userId, refreshToken)
-    //         }
-
-    //         reply.clearCookie('refreshToken', { path: '/api/v1/auth/refresh-token' })
-
-    //         return reply.send({
-    //             success: true,
-    //             message: 'Logged out successfully'
-    //         })
-    //     } catch (error) {
-    //         request.log.error(error)
-    //         return reply.code(500).send({
-    //             success: false,
-    //             message: 'Internal server error'
-    //         })
-    //     }
-    // }
-
+    async logout(request, reply) {
+        try {
+            const userId = request.user?.id; // pastikan sudah melewati verifikasi JWT
+            const refreshToken = request.cookies.refreshToken || request.body.refreshToken;
+    
+            if (!refreshToken) {
+                return reply.code(400).send({
+                    success: false,
+                    message: 'Refresh token is required'
+                });
+            }
+    
+            const result = await authService.logout(userId, refreshToken);
+    
+            // Clear refresh token cookie
+            reply.clearCookie('refreshToken', {
+                path: '/api/v1/auth/refresh-token',
+                httpOnly: true,
+                sameSite: 'strict',
+                secure: process.env.NODE_ENV === 'production'
+            });
+    
+            const statusCode = result.success ? 200 : 400;
+    
+            return reply.code(statusCode).send(result);
+        } catch (error) {
+            request.log.error(error);
+            return reply.code(500).send({
+                success: false,
+                message: 'Internal server error'
+            });
+        }
+    }
+    
 }
 
 module.exports = new AuthController()

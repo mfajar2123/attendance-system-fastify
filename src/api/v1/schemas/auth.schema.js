@@ -119,16 +119,27 @@ const refreshTokenSchema = {
 };
 
 const logoutSchema = {
-  description: 'Logout a user',
+  description: 'Logout a user and revoke the refresh token',
   tags: ['auth'],
   body: {
     type: 'object',
     properties: {
       refreshToken: { type: 'string' }
-    }
+    },
+    additionalProperties: false
+    // refreshToken tidak required karena bisa dari cookie
   },
   response: {
     200: {
+      description: 'Logout success response',
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    },
+    500: {
+      description: 'Internal server error',
       type: 'object',
       properties: {
         success: { type: 'boolean' },
@@ -137,6 +148,7 @@ const logoutSchema = {
     }
   }
 };
+
 
 
 

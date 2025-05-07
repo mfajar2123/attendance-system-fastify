@@ -2,7 +2,7 @@
 
 async function generateToken(fastify, payload, options = {}) {
   const defaultOptions = {
-    expiresIn: process.env.JWT_EXPIRES_IN || '1h'
+    expiresIn: process.env.JWT_EXPIRES_IN || '15m'
   }
 
   return fastify.jwt.sign(payload, { ...defaultOptions, ...options })

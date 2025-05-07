@@ -23,10 +23,10 @@ async function authRoutes(fastify, options) {
     schema: refreshTokenSchema
   }, authController.refreshToken.bind(authController));
 
-  // fastify.post('/logout', {
-  //   schema: logoutSchema,
-  //   preHandler: [verifyToken]
-  // }, authController.logout.bind(authController));
+  fastify.post('/logout', {
+    schema: logoutSchema,
+    preHandler: [verifyToken]
+  }, authController.logout.bind(authController));
 
 
 }
