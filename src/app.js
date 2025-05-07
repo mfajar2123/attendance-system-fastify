@@ -10,7 +10,7 @@ const roleMiddleware = require('./middlewares/role.middleware')
 
 const authRoutes = require('./api/v1/routes/auth.routes');
 const userRoutes = require('./api/v1/routes/user.routes');
-// const attendanceRoutes = require('./routes/v1/attendance.routes');
+const attendanceRoutes = require('./api/v1/routes/attendance.routes');
 // const dashboardRoutes = require('./routes/v1/dashboard.routes');
 
 
@@ -67,7 +67,7 @@ function buildApp(options = {}) {
   // Register routes
   app.register(authRoutes, { prefix: `${apiPrefix}/auth` });
   app.register(userRoutes, { prefix: `${apiPrefix}/users` });
-  // app.register(attendanceRoutes, { prefix: `${apiPrefix}/attendance` });
+  app.register(attendanceRoutes, { prefix: `${apiPrefix}/attendance` });
   // app.register(dashboardRoutes, { prefix: `${apiPrefix}/admin/dashboard` });
 
   // Global error handler
