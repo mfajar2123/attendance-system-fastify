@@ -16,6 +16,19 @@ async function attendanceRoutes(fastify) {
   fastify.get('/today', {
       preHandler: [verifyToken]
   }, attendanceController.getToday)
+
+  fastify.get('/history', {
+    preHandler: [verifyToken],
+    schema: {
+      querystring: {
+        type: 'object',
+        properties: {
+          page: { type: 'integer', default: 1 },
+          limit: { type: 'integer', default: 10 }
+        }
+      }
+    }
+  }, attendanceController.getHistory)
   
 }
 

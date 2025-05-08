@@ -64,6 +64,30 @@ class AttendanceController {
       })
     }
   }
+
+  async getHistory(request, reply) {
+    try {
+      const userId = request.user.id
+      const page = parseInt(request.query.page) || 1
+      const limit = parseInt(request.query.limit) || 10
+
+      const result = await attendanceService.getHistory(userId, page, limit)
+
+      return reply.code(200).send({
+        success: true,
+        message: 'Riwayat kehadiran berhasil diambil',
+        data: result
+      })
+    } catch (error) {
+      return reply.code(400).send({
+        success: false,
+        message: error.message
+      })
+    }
+  }
+
 }
+
+
 
 module.exports = new AttendanceController()

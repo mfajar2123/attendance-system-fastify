@@ -1,7 +1,7 @@
 'use strict'
 const { db } = require('../db/connection')
 const { attendance } = require('../models/schema/attendance')
-const { eq, and, sql, between } = require('drizzle-orm')
+const { eq, and, sql, between, desc, asc } = require('drizzle-orm')
 const dayjs = require('dayjs')
 const utc = require('dayjs/plugin/utc')
 const timezone = require('dayjs/plugin/timezone')
@@ -164,6 +164,43 @@ class AttendanceService {
       location: {
         checkIn: todayAttendance.checkInLocation,
         checkOut: todayAttendance.checkOutLocation
+      }
+    }
+  }
+
+  async getHistory(userId, page = 1, limit = 10) {
+    const offset = (page - 1) * limit
+    
+    const history = await db
+      .select()
+      .from(attendance)
+      .where(eq(attendance.userId, userId))
+      .orderBy(sql`${attendance.date} DESC`)
+      .limit(limit)
+      .offset(offset)
+
+    const count = await db
+      .select({ count: sql`count(*)` })
+      .from(attendance)
+      .where(eq(attendance.userId, userId))
+
+    const totalItems = Number(count[0].count)
+    const totalPages = Math.ceil(totalItems / limit)
+
+    return {
+      attendanceData: history.map(item => ({
+        date: dayjs(item.date).format('YYYY-MM-DD'),
+        checkInTime: item.checkInTime ? dayjs(item.checkInTime).format('HH:mm:ss') : null,
+        checkOutTime: item.checkOutTime ? dayjs(item.checkOutTime).format('HH:mm:ss') : null,
+        status: item.status,
+        notes: item.notes,
+        workDuration: item.workDuration ? `${Math.floor(item.workDuration / 60)} jam ${item.workDuration % 60} menit` : null
+      })),
+      pagination: {
+        page,
+        limit,
+        totalItems,
+        totalPages
       }
     }
   }
