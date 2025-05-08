@@ -35,8 +35,7 @@ class AttendanceService {
       throw new Error('User already checked in today')
     }
 
-    // Determine status based on check-in time
-    const workStartTime = now.startOf('day').hour(8).minute(30)
+    const workStartTime = now.startOf('day').hour(14).minute(30)
     let status = ATTENDANCE_STATUS.PRESENT
     let notes = 'Hadir tepat waktu'
     
@@ -121,6 +120,54 @@ class AttendanceService {
       device
     }
   }
+
+  async getToday(userId) {
+    const now = dayjs().tz('Asia/Jakarta')
+    const startOfDay = now.startOf('day').toDate()
+    const endOfDay = now.endOf('day').toDate()
+
+    const [todayAttendance] = await db
+      .select()
+      .from(attendance)
+      .where(
+        and(
+          eq(attendance.userId, userId),
+          sql`${attendance.date} BETWEEN ${startOfDay} AND ${endOfDay}`
+        )
+      )
+
+    if (!todayAttendance) {
+      return {
+        attendanceStatus: 'Belum check-in',
+        checkInTime: null,
+        checkOutTime: null,
+        status: null,
+        notes: null
+      }
+    }
+
+    return {
+      attendanceStatus: todayAttendance.checkOutTime ? 'Selesai' : 'Check-in',
+      status: todayAttendance.status,
+      notes: todayAttendance.notes,
+      times: {
+        checkInTime: todayAttendance.checkInTime ? 
+        dayjs(todayAttendance.checkInTime).format('YYYY-MM-DD HH:mm:ss') : null,
+        checkOutTime: todayAttendance.checkOutTime ? 
+        dayjs(todayAttendance.checkOutTime).format('YYYY-MM-DD HH:mm:ss') : null,
+        duration: `${todayAttendance.workDuration} menit waktu kerja`
+      },
+      devices: {
+        checkIn: todayAttendance.checkInDevice,
+        checkOut: todayAttendance.checkOutDevice
+      },
+      location: {
+        checkIn: todayAttendance.checkInLocation,
+        checkOut: todayAttendance.checkOutLocation
+      }
+    }
+  }
+
 }
 
 module.exports = new AttendanceService()

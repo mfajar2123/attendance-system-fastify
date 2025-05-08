@@ -46,6 +46,24 @@ class AttendanceController {
       })
     }
   }
+
+  async getToday(request, reply) {
+    try {
+      const userId = request.user.id
+      const result = await attendanceService.getToday(userId)
+
+      return reply.code(200).send({
+        success: true,
+        message: 'Data kehadiran hari ini berhasil diambil',
+        data: result
+      })
+    } catch (error) {
+      return reply.code(400).send({
+        success: false,
+        message: error.message
+      })
+    }
+  }
 }
 
 module.exports = new AttendanceController()

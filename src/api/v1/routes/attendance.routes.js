@@ -12,6 +12,11 @@ async function attendanceRoutes(fastify) {
   fastify.post('/check-out', {
     preHandler: [verifyToken]
   }, attendanceController.checkOut)
+
+  fastify.get('/today', {
+      preHandler: [verifyToken]
+  }, attendanceController.getToday)
+  
 }
 
 module.exports = attendanceRoutes
