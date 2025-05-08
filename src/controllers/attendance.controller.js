@@ -86,6 +86,38 @@ class AttendanceController {
     }
   }
 
+  async getReport(request, reply) {
+    try {
+      
+  
+      const { startDate, endDate, departmentName } = request.query
+      if (!startDate || !endDate) {
+        return reply.code(400).send({
+          success: false,
+          message: 'Parameter startDate dan endDate diperlukan'
+        })
+      }
+  
+      const result = await attendanceService.generateReport(
+        startDate,
+        endDate,
+        departmentName || null
+      )
+  
+      return reply.code(200).send({
+        success: true,
+        message: 'Laporan kehadiran berhasil dibuat',
+        data: result
+      })
+    } catch (error) {
+      return reply.code(400).send({
+        success: false,
+        message: error.message
+      })
+    }
+  }
+  
+
 }
 
 
