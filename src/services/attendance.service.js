@@ -1,85 +1,126 @@
-'use strict';
-const { db } = require('../db/connection');
-const { attendance } = require('../models/schema/attendance');
-const { eq, and, gte, lte } = require('drizzle-orm');
+'use strict'
+const { db } = require('../db/connection')
+const { attendance } = require('../models/schema/attendance')
+const { eq, and, sql, between } = require('drizzle-orm')
+const dayjs = require('dayjs')
+const utc = require('dayjs/plugin/utc')
+const timezone = require('dayjs/plugin/timezone')
 
-class AttendanceService {
-  async checkIn(userId, payload) {
-    
-    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-    const todayEnd = new Date(); todayEnd.setHours(23,59,59,999);
-    const [existing] = await db.select().from(attendance)
-      .where(and(eq(attendance.userId, userId), gte(attendance.date, todayStart), lte(attendance.date, todayEnd)))
-      .limit(1);
-    if (existing && existing.checkInTime) {
-      return { success: false, message: 'Already checked in today' };
-    }
-    const record = await db.insert(attendance).values({
-      userId,
-      checkInTime: new Date(),
-      checkInLocation: payload.location,
-      checkInIp: payload.ip,
-      checkInDevice: payload.device
-    }).returning();
-    return { success: true, data: record[0] };
-  }
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
-  async checkOut(userId, payload) {
-    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-    const todayEnd = new Date(); todayEnd.setHours(23,59,59,999);
-    const [existing] = await db.select().from(attendance)
-      .where(and(eq(attendance.userId, userId), gte(attendance.date, todayStart), lte(attendance.date, todayEnd)))
-      .limit(1);
-    if (!existing || !existing.checkInTime) {
-      return { success: false, message: 'Check-in required before check-out' };
-    }
-    if (existing.checkOutTime) {
-      return { success: false, message: 'Already checked out today' };
-    }
-    const duration = Math.floor((Date.now() - new Date(existing.checkInTime)) / 60000);
-    const [updated] = await db.update(attendance)
-      .set({
-        checkOutTime: new Date(),
-        checkOutLocation: payload.location,
-        checkOutIp: payload.ip,
-        checkOutDevice: payload.device,
-        workDuration: duration
-      })
-      .where(eq(attendance.id, existing.id))
-      .returning();
-    return { success: true, data: updated };
-  }
-
-  // async getToday(userId) {
-  //   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-  //   const todayEnd = new Date(); todayEnd.setHours(23,59,59,999);
-  //   const [record] = await db.select().from(attendance)
-  //     .where(and(eq(attendance.userId, userId), gte(attendance.date, todayStart), lte(attendance.date, todayEnd)))
-  //     .limit(1);
-  //   return { success: true, data: record || null };
-  // }
-
-  // async getHistory(userId, startDate, endDate) {
-  //   const [records] = await db.select().from(attendance)
-  //     .where(and(
-  //       eq(attendance.userId, userId),
-  //       gte(attendance.date, new Date(startDate)),
-  //       lte(attendance.date, new Date(endDate))
-  //     ));
-  //   return { success: true, data: records };
-  // }
-
-  // async getReport() {
-  //   // Example: aggregate by user
-  //   const report = await db.select({
-  //     userId: attendance.userId,
-  //     totalDays: db.fn.count(attendance.id),
-  //     totalWork: db.fn.sum(attendance.workDuration)
-  //   })
-  //   .from(attendance)
-  //   .groupBy(attendance.userId);
-  //   return { success: true, report };
-  // }
+const ATTENDANCE_STATUS = {
+  PRESENT: 'present',
+  LATE: 'late',
+  ABSENT: 'absent'
 }
 
-module.exports = new AttendanceService();
+class AttendanceService {
+  async checkIn(userId, location, ip, device) {
+    const now = dayjs().tz('Asia/Jakarta')
+    const startOfDay = now.startOf('day').toDate()
+    const endOfDay = now.endOf('day').toDate()
+
+    const [existing] = await db
+      .select()
+      .from(attendance)
+      .where(
+        and(
+          eq(attendance.userId, userId),
+          sql`${attendance.date} BETWEEN ${startOfDay} AND ${endOfDay}`
+        )
+      )
+
+    if (existing && existing.checkInTime) {
+      throw new Error('User already checked in today')
+    }
+
+    // Determine status based on check-in time
+    const workStartTime = now.startOf('day').hour(8).minute(30)
+    let status = ATTENDANCE_STATUS.PRESENT
+    let notes = 'Hadir tepat waktu'
+    
+    if (now.isAfter(workStartTime)) {
+      status = ATTENDANCE_STATUS.LATE
+      const lateByMinutes = now.diff(workStartTime, 'minute')
+      notes = `Terlambat ${lateByMinutes} menit`
+    }
+
+    const [result] = await db.insert(attendance)
+      .values({
+        userId,
+        date: now.toDate(),
+        checkInTime: now.toDate(),
+        checkInLocation: location,
+        checkInIp: ip,
+        checkInDevice: device,
+        status: status,
+        notes: notes,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning()
+
+    return {
+      checkInTime: now.format('YYYY-MM-DD HH:mm:ss'),
+      location,
+      ip,
+      device,
+      status,
+      notes
+    }
+  }
+
+  async checkOut(userId, location, ip, device) {
+    const now = dayjs().tz('Asia/Jakarta')
+    const startOfDay = now.startOf('day').toDate()
+    const endOfDay = now.endOf('day').toDate()
+
+    const [existing] = await db
+      .select()
+      .from(attendance)
+      .where(
+        and(
+          eq(attendance.userId, userId),
+          sql`${attendance.date} BETWEEN ${startOfDay} AND ${endOfDay}`
+        )
+      )
+
+    if (!existing || !existing.checkInTime) {
+      throw new Error('User has not checked in today')
+    }
+
+    if (existing.checkOutTime) {
+      throw new Error('User already checked out today')
+    }
+
+    const checkOutTime = now
+    const checkInTime = dayjs(existing.checkInTime).tz('Asia/Jakarta')
+
+    const durationMinutes = checkOutTime.diff(checkInTime, 'minute')
+    const hours = Math.floor(durationMinutes / 60)
+    const minutes = durationMinutes % 60
+
+    const [updated] = await db.update(attendance)
+      .set({
+        checkOutTime: checkOutTime.toDate(),
+        checkOutLocation: location,
+        checkOutIp: ip,
+        checkOutDevice: device,
+        workDuration: durationMinutes,
+        updatedAt: new Date()
+      })
+      .where(eq(attendance.id, existing.id))
+      .returning()
+
+    return {
+      checkOutTime: checkOutTime.format('YYYY-MM-DD HH:mm:ss'),
+      duration: `${hours} jam ${minutes} menit`,
+      location,
+      ip,
+      device
+    }
+  }
+}
+
+module.exports = new AttendanceService()
