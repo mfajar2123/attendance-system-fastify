@@ -11,7 +11,7 @@ const roleMiddleware = require('./middlewares/role.middleware')
 const authRoutes = require('./api/v1/routes/auth.routes');
 const userRoutes = require('./api/v1/routes/user.routes');
 const attendanceRoutes = require('./api/v1/routes/attendance.routes');
-// const dashboardRoutes = require('./routes/v1/dashboard.routes');
+const adminRoutes = require('./api/v1/routes/admin.routes')
 
 
 const { startCheckoutSchedulers } = require('./jobs/autoCheckout.job');
@@ -72,6 +72,7 @@ function buildApp(options = {}) {
   app.register(authRoutes, { prefix: `${apiPrefix}/auth` });
   app.register(userRoutes, { prefix: `${apiPrefix}/users` });
   app.register(attendanceRoutes, { prefix: `${apiPrefix}/attendance` });
+  app.register(adminRoutes, { prefix: `${apiPrefix}/admin` })
   // app.register(dashboardRoutes, { prefix: `${apiPrefix}/admin/dashboard` });
 
   // Start the scheduler after all plugins are registered
