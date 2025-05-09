@@ -14,6 +14,10 @@ const attendanceRoutes = require('./api/v1/routes/attendance.routes');
 // const dashboardRoutes = require('./routes/v1/dashboard.routes');
 
 
+const { startSchedulers } = require('./jobs/autoCheckout.job');
+
+
+
 function buildApp(options = {}) {
   const app = fastify({
     ...options
@@ -24,6 +28,7 @@ function buildApp(options = {}) {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true
   });
+
 
   if (process.env.NODE_ENV === 'development') {
     app.register(require('@fastify/swagger'), {
@@ -52,23 +57,27 @@ function buildApp(options = {}) {
   });
 
   app.register(fastifyCookie, {
-    hook: 'onRequest'
+      hook: 'onRequest'
   })
 
-   app.register(require('./plugins/jwt'));
-   app.register(require('./plugins/db'));
-  //  app.register(require('./plugins/scheduler'));
-
-   app.decorate('auth', authMiddleware(app));
-   app.decorate('role', roleMiddleware(app));
+  app.register(require('./plugins/jwt'));
+  app.register(require('./plugins/db'));
+  
+  app.decorate('auth', authMiddleware(app));
+  app.decorate('role', roleMiddleware(app));
 
   const apiPrefix = '/api/v1';
 
-  // Register routes
   app.register(authRoutes, { prefix: `${apiPrefix}/auth` });
   app.register(userRoutes, { prefix: `${apiPrefix}/users` });
   app.register(attendanceRoutes, { prefix: `${apiPrefix}/attendance` });
   // app.register(dashboardRoutes, { prefix: `${apiPrefix}/admin/dashboard` });
+
+  // Start the scheduler after all plugins are registered
+  app.addHook('onReady', () => {
+    app.log.info('Starting schedulers');
+    startSchedulers(app);
+  });
 
   // Global error handler
   app.setErrorHandler((error, request, reply) => {
