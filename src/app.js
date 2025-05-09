@@ -14,7 +14,8 @@ const attendanceRoutes = require('./api/v1/routes/attendance.routes');
 // const dashboardRoutes = require('./routes/v1/dashboard.routes');
 
 
-const { startSchedulers } = require('./jobs/autoCheckout.job');
+const { startCheckoutSchedulers } = require('./jobs/autoCheckout.job');
+const { startReportSchedulers } = require('./jobs/autoReport.job')
 
 
 
@@ -76,7 +77,8 @@ function buildApp(options = {}) {
   // Start the scheduler after all plugins are registered
   app.addHook('onReady', () => {
     app.log.info('Starting schedulers');
-    startSchedulers(app);
+    startCheckoutSchedulers(app),
+    startReportSchedulers(app)
   });
 
   // Global error handler

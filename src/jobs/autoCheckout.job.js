@@ -11,7 +11,7 @@ const { attendance, CHECKOUT_TYPES } = require('../models/schema/attendance')
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
-function startSchedulers(app) {
+function startCheckoutSchedulers(app) {
   app.log.info('[SCHEDULER] Initializing auto-checkout scheduler')
 
   // Jalankan tiap 10 detik (*/10 * * * * *)
@@ -78,4 +78,4 @@ function startSchedulers(app) {
   return job
 }
 
-module.exports = { startSchedulers }
+module.exports = { startCheckoutSchedulers }

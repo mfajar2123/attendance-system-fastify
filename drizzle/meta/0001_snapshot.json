@@ -1,6 +1,6 @@
 {
-  "id": "a76e46e5-695a-45b7-9e2b-f1f00cb59155",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "be083b08-976f-4240-9550-62f5d32f6f49",
+  "prevId": "a76e46e5-695a-45b7-9e2b-f1f00cb59155",
   "version": "5",
   "dialect": "pg",
   "tables": {
@@ -147,7 +147,7 @@
         },
         "report_date": {
           "name": "report_date",
-          "type": "timestamp",
+          "type": "date",
           "primaryKey": false,
           "notNull": true
         },

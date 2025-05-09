@@ -2,7 +2,7 @@
 
 const { migrate } = require('drizzle-orm/node-postgres/migrator');
 const { db } = require('./connection');
-const path = require('path');
+
 
 async function runMigrations() {
   console.log('Starting database migrations...');

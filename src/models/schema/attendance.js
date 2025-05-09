@@ -36,22 +36,9 @@ const attendance = pgTable('attendance', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
-const leaveRequests = pgTable('leave_requests', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id).notNull(),
-  startDate: timestamp('start_date').notNull(),
-  endDate: timestamp('end_date').notNull(),
-  reason: text('reason').notNull(),
-  status: varchar('status', { length: 20 }).notNull().default('pending'), // pending, approved, rejected
-  approvedBy: integer('approved_by').references(() => users.id),
-  approvedAt: timestamp('approved_at'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull()
-});
 
 module.exports = {
   attendance,
-  leaveRequests,
   ATTENDANCE_STATUS,
   CHECKOUT_TYPES
 };
