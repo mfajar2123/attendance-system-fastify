@@ -3,14 +3,16 @@
 const buildApp = require('./app');
 const { testConnection } = require('./db/connection');
 const dotenv = require('dotenv');
-const { loggerConfig, LOG_LEVEL } = require('./utils/logger');
+const { logger, LOG_LEVEL } = require('./utils/logger');
 
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || 'localhost';
 
-const app = buildApp({ logger: loggerConfig });
+const app = buildApp({ logger: logger,
+  //  disableRequestLogging: true
+ });
 
 async function start() {
   try {

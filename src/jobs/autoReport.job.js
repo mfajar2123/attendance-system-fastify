@@ -9,7 +9,7 @@ const { db } = require('../db/connection');
 const { attendance } = require('../models/schema/attendance');
 const { daily_report, weekly_report, monthly_report } = require('../models/schema/report');
 
-// extend dayjs with timezone support
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -45,11 +45,11 @@ function startReportSchedulers(app) {
       const totalPresent = records.filter(r => r.status === 'present').length;
       const totalLate = records.filter(r => r.status === 'late').length;
 
-      // count unique users who did not check in
+    
       const allUsersCount = await db.select({ count: sql`count(*)` }).from(sql`users`);
       const totalAbsents = allUsersCount[0].count - records.length;
 
-      // insert into daily_report table
+     
       await db.insert(daily_report).values({
         
         reportDate: yesterday.format('YYYY-MM-DD'),

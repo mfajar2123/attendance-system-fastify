@@ -15,7 +15,7 @@ function startCheckoutSchedulers(app) {
   app.log.info('[SCHEDULER] Initializing auto-checkout scheduler')
 
   // Jalankan tiap 10 detik (*/10 * * * * *)
-  const job = cron.schedule('0 18 * * *', async () => {
+  const job = cron.schedule('33 14 * * *', async () => {
     const now = dayjs().tz('Asia/Jakarta')
     const todayStart = now.startOf('day').toDate()
     const todayEnd   = now.endOf('day').toDate()
