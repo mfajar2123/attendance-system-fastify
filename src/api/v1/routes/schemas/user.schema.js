@@ -1,5 +1,5 @@
 'use strict';
-const { ROLES } = require('../../../models/schema/users')
+const { ROLES } = require('../../../../models/schema/users')
 
 const userResponseSchema = {
   type: 'object',

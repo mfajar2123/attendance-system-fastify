@@ -1,13 +1,13 @@
 'use strict'
 
-const { db } = require('../db/connection')
+const { db } = require('../../../db/connection')
 const { eq, and } = require('drizzle-orm')
 
 
 const bcrypt = require('bcryptjs')
 const { v4: uuidv4 } = require('uuid')
-const { users, refreshTokens } = require('../models/schema/users')
-const jwtUtils = require('../utils/jwt')
+const { users, refreshTokens } = require('../../../models/schema/users')
+const jwtUtils = require('../../../utils/jwt')
 const { default: fastify } = require('fastify')
 
 class AuthService {
@@ -56,7 +56,6 @@ class AuthService {
                 return { success: false, message: 'Invalid credentials' }
             }
 
-
             const accessToken = await jwtUtils.generateToken(fastify, {
                 id: user.id,
                 username: user.username,
@@ -75,6 +74,8 @@ class AuthService {
             })
 
             await db.update(users).set({ lastLogin: new Date() }).where(eq(users.id, user.id))
+
+           
 
             return {
                 success: true,
@@ -95,6 +96,7 @@ class AuthService {
                 }
             }
         } catch (error) {
+
             throw new Error(`Failed to login: ${error.message}`)
         }
     }

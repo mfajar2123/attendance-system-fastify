@@ -13,10 +13,8 @@ const userRoutes = require('./api/v1/routes/user.routes');
 const attendanceRoutes = require('./api/v1/routes/attendance.routes');
 const adminRoutes = require('./api/v1/routes/admin.routes')
 
-
 const { startCheckoutSchedulers } = require('./jobs/autoCheckout.job');
 const { startReportSchedulers } = require('./jobs/autoReport.job')
-
 
 
 function buildApp(options = {}) {
@@ -29,7 +27,6 @@ function buildApp(options = {}) {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true
   });
-
 
   if (process.env.NODE_ENV === 'development') {
     app.register(require('@fastify/swagger'), {
@@ -73,7 +70,6 @@ function buildApp(options = {}) {
   app.register(userRoutes, { prefix: `${apiPrefix}/users` });
   app.register(attendanceRoutes, { prefix: `${apiPrefix}/attendance` });
   app.register(adminRoutes, { prefix: `${apiPrefix}/admin` })
-  // app.register(dashboardRoutes, { prefix: `${apiPrefix}/admin/dashboard` });
 
   // Start the scheduler after all plugins are registered
   app.addHook('onReady', () => {

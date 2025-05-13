@@ -1,6 +1,6 @@
 'use strict'
 
-const userController = require('../../../controllers/user.controller')
+const userController = require('../controllers/user.controller')
 
 const {
     createUserSchema,
@@ -8,7 +8,7 @@ const {
     getUserSchema,
     getAllUsersSchema,
     deleteUserSchema
-} = require('../schemas/user.schema')
+} = require('./schemas/user.schema')
 
 async function userRoutes(fastify, options) {
     const { verifyToken } = fastify.auth

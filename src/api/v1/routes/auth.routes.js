@@ -1,11 +1,11 @@
 'use strict';
-const authController = require('../../../controllers/auth.controller')
+const authController = require('../controllers/auth.controller')
 const {
   registerSchema,
   loginSchema,
   refreshTokenSchema,
   logoutSchema,
-} = require('../schemas/auth.schema');
+} = require('./schemas/auth.schema');
 
 async function authRoutes(fastify, options) {
   const { verifyToken } = fastify.auth;

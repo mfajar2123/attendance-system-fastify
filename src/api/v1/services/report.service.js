@@ -1,7 +1,7 @@
 'use strict';
 
-const { db } = require('../db/connection');
-const { daily_report, weekly_report, monthly_report } = require('../models/schema/report');
+const { db } = require('../../../db/connection');
+const { daily_report, weekly_report, monthly_report } = require('../../../models/schema/report');
 const { desc } = require('drizzle-orm');
 
 class ReportService {

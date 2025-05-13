@@ -1,6 +1,6 @@
 'use strict'
 
-const attendanceController = require('../../../controllers/attendance.controller')
+const attendanceController = require('../controllers/attendance.controller')
 
 async function attendanceRoutes(fastify) {
   const { verifyToken } = fastify.auth

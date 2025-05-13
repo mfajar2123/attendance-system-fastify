@@ -1,6 +1,6 @@
 'use strict';
 
-const adminController = require('../../../controllers/admin.controller');
+const adminController = require('../controllers/admin.controller');
 
 async function adminRoutes(fastify) {
   const { verifyToken } = fastify.auth;

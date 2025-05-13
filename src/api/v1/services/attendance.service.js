@@ -1,7 +1,7 @@
 'use strict'
-const { db } = require('../db/connection')
-const { attendance } = require('../models/schema/attendance')
-const { users } = require('../models/schema/users')
+const { db } = require('../../../db/connection')
+const { attendance } = require('../../../models/schema/attendance')
+const { users } = require('../../../models/schema/users')
 const { eq, and, sql, between, desc, asc } = require('drizzle-orm')
 const dayjs = require('dayjs')
 const utc = require('dayjs/plugin/utc')

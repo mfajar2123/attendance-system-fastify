@@ -39,6 +39,8 @@ class AuthController {
 
             })
 
+            request.log.info(`[LOGIN SUCCESS] username:${result.user.username} id:${result.user.id} ip:${request.ip} timestamp: ${new Date().toISOString()}`)
+
             return reply.send({
                 success: true,
                 user: result.user,

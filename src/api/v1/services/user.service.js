@@ -1,9 +1,9 @@
 'user strict'
 
-const { db } = require('../db/connection')
+const { db } = require('../../../db/connection')
 const { eq }  = require('drizzle-orm')
-const { users } = require('../models/schema/users')
-const { hashPassword } = require('../utils/hash')
+const { users } = require('../../../models/schema/users')
+const { hashPassword } = require('../../../utils/hash')
 
 class UserService {
 
